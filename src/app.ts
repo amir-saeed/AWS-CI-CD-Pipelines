@@ -1,15 +1,14 @@
-import express, { Application, Request, Response } from 'express';
+import express, { Express, Request, Response } from 'express';
+import config from 'config';
+import connect from './utils/connect';
+import routes from './routes';
 
-const app: Application = express();
+const port = config.get<number>("port");
+const app: Express = express();
 
-app.get("", (req: Request, res: Response) => {
-    res.send({
-        Id: 90,
-        FirstName: "Prenex",
-        LastName: "Info"
-    });
-});
-
-app.listen(3700, () => {
+app.listen(3700, async () => {
     console.log('Server is running on port 3700');
+    await connect();
+
+    routes(app);
 })
