@@ -11,8 +11,6 @@ async function connect() {
         console.log('Could not connect to db');
         process.exit(1);
     }
-
-
 }
 
 export default connect;
