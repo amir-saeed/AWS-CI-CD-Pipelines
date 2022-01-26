@@ -1,10 +1,15 @@
-import express, { Express } from 'express';
+import express from 'express';
 import config from 'config';
+import helmet from 'helmet';
+
 import connect from './utils/connect';
 import routes from './routes';
 
 const port = config.get<number>("port");
-const app: Express = express();
+const app = express();
+
+app.use(helmet());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.listen(port, async () => {

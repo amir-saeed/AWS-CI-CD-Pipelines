@@ -1,27 +1,53 @@
-import mongoos from 'mongoose';
+// import mongoos from 'mongoose';
 
-const { Schema } = mongoos;
+import * as mongoose from 'mongoose';
+import { UserInput, UserDocument } from '../interfaces/userInput.interface';
+import bcrypt from 'bcrypt';
+import config from 'config';
 
-export interface UserInput {
-    email: string,
-    name: string,
-    password: string
-}
-
-export interface UserDocument extends UserInput, mongoos.Document {
-    createdAt: Date,
-    updatedAt: Date
-}
+const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-    email: { type: String, required: true, unique: true },
-    name: { type: String, required: true },
-    password: { type: String, required: true }
+    name: {
+        type: String,
+        required: true,
+        minlength: 5,
+        maxlength: 50
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        minlength: 5,
+        maxlength: 255
+
+    },
+    password: {
+        type: String,
+        required: true,
+        minlength: 5,
+        maxlength: 1024
+    }
 },
     {
         timestamps: true
     })
 
-const UserModel = mongoos.model<UserDocument>("User", userSchema);
+userSchema.pre("save",
+    async function (next) {
+        let user = this as UserDocument;
+        if (!user.isModified("password")) {
+            return next();
+        }
+        // generate salt
+        const salt = await bcrypt.genSalt(config.get<number>("saltLength"));
+        if (user && user.password) {
+            const hash = await bcrypt.hashSync(user.password, salt);
+            user.password = hash;
+        }
+        return next();
+    });
+
+const UserModel = mongoose.model<UserDocument>("users", userSchema);
 
 export default UserModel;
